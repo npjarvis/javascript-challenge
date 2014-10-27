@@ -8,7 +8,6 @@ var requiredFields = ['firstName', 'lastName', 'address1', 'city', 'state', 'zip
 var signupForm = document.getElementById("signup");
 
 function onReady () {
-    var states = usStates;
     var stateSelect = signupForm.elements["state"];
     var idx;
     var option;
@@ -49,7 +48,7 @@ function onSubmit (evt) {
         valid = validateForm(this);
     }
     catch(err) {
-        console.log(err);
+        displayError(err, true);
         valid = false; //stop form submission to see error
     }
 
@@ -60,15 +59,34 @@ function onSubmit (evt) {
     return valid;
 }
 
-
 function validateForm (form) {
     var index;
     var formValid = true;
     for(index = 0; index < requiredFields.length; ++index) {
         formValid &= validateRequiredField(form.elements[requiredFields[index]]);
     }
-
+    var input = form.elements['birthdate'].value;
+    console.log(input);
+    var age = calculateAge(form.elements['birthdate'].value);
+    if (age < 13) {
+        throw new Error('You must be 13 to complete application');
+    }
     return formValid;
+}
+
+function calculateAge (dob) {
+    var today = new Date();
+    var datebirth = new Date(dob);
+    var yearsDiff = today.getFullYear() - datebirth.getUTCFullYear();
+    var monthDiff = today.getMonth() - datebirth.getUTCMonth();
+    var daysDiff = today.getDay() - datebirth.getUTCDay();
+
+    if (monthDiff < 0 || (0 === monthDiff && daysDiff < 0)) {
+        yearsDiff--;
+    }
+    console.log(yearsDiff);
+    return yearsDiff;
+
 }
 
 function validateRequiredField(field) {
@@ -89,5 +107,16 @@ function validateRequiredField(field) {
     return validVal;
 }
 
+function displayError(error) {
+    displayMessage(error, true);
+}
 
+function displayMessage(message, isError) {
+    var msgElem = document.getElementById('birthdateMessage');
+    msgElem.innerHTML = message;
+    // read as a combo of if/then statement and an assignment in one line; assign the following value to classname,
+    // if yes alert alert-danger, else alert alert-success
+    msgElem.className = isError ? 'alert alert-danger' : 'alert alert-success';
+    msgElem.style.display = 'block';
+}
 document.addEventListener('DOMContentLoaded', onReady);
