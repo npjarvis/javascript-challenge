@@ -4,9 +4,11 @@
 */
 "use strict";
 
+var requiredFields = ['firstName', 'lastName', 'address1', 'city', 'state', 'zip', 'birthdate'];
+var signupForm = document.getElementById("signup");
+
 function onReady () {
     var states = usStates;
-    var signupForm = document.getElementById("signup");
     var stateSelect = signupForm.elements["state"];
     var idx;
     var option;
@@ -30,10 +32,11 @@ function onReady () {
 
 function otherOccupation () {
     var occupation = document.getElementById('occupation');
-    var signupForm = document.getElementById("signup");
     var other = signupForm.elements['occupationOther'];
     if (occupation.value == "other"){
         other.style.display = "block";
+        requiredFields.push('occupationOther');
+        console.log(requiredFields);
     }else {
         other.style.display = 'none';
     }
@@ -41,54 +44,48 @@ function otherOccupation () {
 }
 
 function onSubmit (evt) {
-    //var valid = true;
-    //try {
-    //    valid = validateForm(this);
-    //}
-    //catch(exception) {
-    //    console.log(exception);
-    //    valid = false;
-    //}
-    evt.returnValue = validateForm(this);
-    if (!evt.returnValue && evt.preventDefault) {
+    var valid = true;
+    try {
+        valid = validateForm(this);
+    }
+    catch(err) {
+        console.log(err);
+        valid = false; //stop form submission to see error
+    }
+
+    if (!valid && evt.preventDefault) {
         evt.preventDefault();
     }
-    return evt.returnValue;
+    evt.returnValue = valid; //for older browsers
+    return valid;
 }
 
+
 function validateForm (form) {
-    var requiredFields = ['firstName', 'lastName', 'address1', 'city', 'state', 'zip', 'birthdate'];
-    if (occupation.value == 'other') {
-        requiredFields.add(other);
-    } else {
-
-    }
-    var idx;
+    var index;
     var formValid = true;
-    for(idx = 0; idx < requiredFields.length; ++idx) {
-        formValid &= validateRequiredField(form.elements[requiredFields[idx]]);
+    for(index = 0; index < requiredFields.length; ++index) {
+        formValid &= validateRequiredField(form.elements[requiredFields[index]]);
     }
 
-    var occupation = document.getElementById('occupation');
-    var signupForm = document.getElementById("signup");
-    var other = signupForm.elements['occupationOther'];
-
-    if (!formValid) {
-        var errMsg = document.getElementById('error-message');
-        errMsg.innerHTML = 'YOU MUST FILL OUT REQUIRED FIELDS';
-        errMsg.style.display = 'block';
-    }
     return formValid;
 }
 
 function validateRequiredField(field) {
     var value = field.value.trim();
+    var zipRegExp = new RegExp('^\\d{5}$');
     var validVal = value.length > 0;
+    if (field.name === 'zip') {
+        validVal = zipRegExp.test(field.value);
+    }
+
     if (validVal) {
         field.className = 'form-control';
-    } else {
-        field.className = 'form-control invalid'
     }
+    else {
+        field.className = 'form-control invalid';
+    }
+
     return validVal;
 }
 
